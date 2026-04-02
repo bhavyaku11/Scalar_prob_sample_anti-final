@@ -1,0 +1,11 @@
+name: "Dropshipping Operations Manager"
+description: "A simulated dropshipping e-commerce storefront for AI operations managers."
+version: "1.0.0"
+author: "OpenEnv Builder"
+docker:
+  dockerfile: Dockerfile
+entrypoint: "python server.py"
+models:
+  observation: "models.py:Observation"
+  action: "models.py:Action"
+  reward: "models.py:Reward"
