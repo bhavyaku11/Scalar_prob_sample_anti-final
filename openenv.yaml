@@ -1,5 +1,5 @@
 name: "Dropshipping Operations Manager"
-description: "A simulated dropshipping e-commerce storefront for AI operations managers."
+description: "A simulated dropshipping e-commerce storefront for evaluating AI operations agents. Features randomized state, step-level reward"
 version: "1.0.0"
 author: "OpenEnv Builder"
 docker:
@@ -9,3 +9,15 @@ models:
   observation: "models.py:Observation"
   action: "models.py:Action"
   reward: "models.py:Reward"
+
+# --- ADD THIS SECTION BELOW ---
+tasks:
+  - id: task_1
+    name: "Supplier Stock-Out"
+    grader: "tasks.grade_task_1"
+  - id: task_2
+    name: "Refund & Reply Ticket"
+    grader: "tasks.grade_task_2"
+  - id: task_3
+    name: "Competitive Re-Pricing"
+    grader: "tasks.grade_task_3"
