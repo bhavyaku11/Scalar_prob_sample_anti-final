@@ -4,7 +4,6 @@ from openai import OpenAI
 from env import DropshippingEnv
 from tasks import grade_task_1, grade_task_2, grade_task_3
 
-
 def main():
     api_base_url = os.environ.get("API_BASE_URL", "https://api.openai.com/v1")
     model_name = os.environ.get("MODEL_NAME", "gpt-4o-mini")
@@ -40,6 +39,7 @@ Rules:
     print("  DROPSHIPPING OPERATIONS SIMULATION")
     print("=" * 60)
 
+    # [START] tag must be printed before the loop
     print("[START] task=dropshipping", flush=True)
     
     for step in range(1, MAX_STEPS + 1):
@@ -67,9 +67,12 @@ Rules:
 
         messages.append({"role": "assistant", "content": action_string})
 
+        # Step calculation must happen BEFORE the [STEP] print
+        new_state, reward, done, info = env.step(action_string)
+        
+        # [STEP] tag inside the loop
         print(f"[STEP] step={step} reward={reward}", flush=True)
         
-        new_state, reward, done, info = env.step(action_string)
         print(f"  Reward: {reward:+.2f} | Done: {done}")
         print(f"  Info: {info['message']} (Error: {info['error']})")
 
@@ -94,8 +97,9 @@ Rules:
     print(f"  Total:                             {score_1 + score_2 + score_3:.2f} / 3.00")
     print("=" * 60)
 
-final_total_score = (score_1 + score_2 + score_3) / 3.0
-print(f"[END] task=dropshipping score={final_total_score:.2f} steps={MAX_STEPS}", flush=True)
+    # These lines are now INDENTED so they stay inside the main() function
+    final_total_score = (score_1 + score_2 + score_3) / 3.0
+    print(f"[END] task=dropshipping score={final_total_score:.2f} steps={MAX_STEPS}", flush=True)
 
 if __name__ == "__main__":
     main()
