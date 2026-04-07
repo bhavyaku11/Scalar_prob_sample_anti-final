@@ -19,12 +19,14 @@ def main():
     MAX_STEPS = 5
 
     system_prompt = """You are an autonomous Dropshipping Operations Manager. Your job is to manage a simulated e-commerce storefront by reading the current business state and taking exactly ONE action per turn.
+
 You must reply with exactly one of the following function calls. Do not include any conversational text:
 - update_inventory(product_id: str, new_stock_level: int)
 - issue_refund(ticket_id: str, refund_percentage: int)
 - update_price(product_id: str, new_retail_price: float)
 - reply_ticket(ticket_id: str, message: str)
 - noop()
+
 Rules:
 - If a supplier says a product is out of stock, update the inventory to 0.
 - If adjusting prices against competitors, you must maintain at least a 20% profit margin ((Retail - Cost) / Retail >= 0.20) while staying at least 5% cheaper than the competitor price.
@@ -38,6 +40,8 @@ Rules:
     print("  DROPSHIPPING OPERATIONS SIMULATION")
     print("=" * 60)
 
+    print("[START] task=dropshipping", flush=True)
+    
     for step in range(1, MAX_STEPS + 1):
         print(f"\n--- Step {step}/{MAX_STEPS} ---")
         state_str = env.state()
@@ -63,6 +67,8 @@ Rules:
 
         messages.append({"role": "assistant", "content": action_string})
 
+        print(f"[STEP] step={step} reward={reward}", flush=True)
+        
         new_state, reward, done, info = env.step(action_string)
         print(f"  Reward: {reward:+.2f} | Done: {done}")
         print(f"  Info: {info['message']} (Error: {info['error']})")
@@ -88,6 +94,8 @@ Rules:
     print(f"  Total:                             {score_1 + score_2 + score_3:.2f} / 3.00")
     print("=" * 60)
 
+final_total_score = (score_1 + score_2 + score_3) / 3.0
+print(f"[END] task=dropshipping score={final_total_score:.2f} steps={MAX_STEPS}", flush=True)
 
 if __name__ == "__main__":
     main()
