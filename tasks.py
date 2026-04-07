@@ -1,17 +1,15 @@
 import json
 
-
 def grade_task_1(final_state_json: str, env) -> float:
     """Checks if the agent zeroed out the supplier-flagged out-of-stock product."""
     try:
         state = json.loads(final_state_json)
         target_product = env._out_of_stock_product
         if state["inventory"].get(target_product, {}).get("stock") == 0:
-            return 1.0
+            return 0.99  # Validated: strictly between 0 and 1
     except Exception:
         pass
-    return 0.0
-
+    return 0.01  # Validated: strictly between 0 and 1
 
 def grade_task_2(final_state_json: str, env) -> float:
     """Checks if the agent issued a >=15% refund AND replied to the delayed ticket."""
@@ -28,13 +26,12 @@ def grade_task_2(final_state_json: str, env) -> float:
         reply_ok = any(r.get("ticket_id") == target_ticket for r in replies)
 
         if refund_ok and reply_ok:
-            return 1.0
+            return 0.99
         elif refund_ok or reply_ok:
             return 0.5
     except Exception:
         pass
-    return 0.0
-
+    return 0.01
 
 def grade_task_3(final_state_json: str, env) -> float:
     """Checks if the agent re-priced the competitor product within margin rules.
@@ -56,7 +53,7 @@ def grade_task_3(final_state_json: str, env) -> float:
         min_margin_price = round(cost / 0.80, 2)
 
         if min_margin_price <= new_price <= target_max:
-            return 1.0
+            return 0.99
     except Exception:
         pass
-    return 0.0
+    return 0.01
