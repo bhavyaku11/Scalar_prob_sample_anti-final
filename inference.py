@@ -39,10 +39,12 @@ Rules:
     print("  DROPSHIPPING OPERATIONS SIMULATION")
     print("=" * 60)
 
-    # [START] tag must be printed before the loop
+    # [START] tag
     print("[START] task=dropshipping", flush=True)
     
+    final_step_count = 0
     for step in range(1, MAX_STEPS + 1):
+        final_step_count = step
         print(f"\n--- Step {step}/{MAX_STEPS} ---")
         state_str = env.state()
 
@@ -64,13 +66,11 @@ Rules:
             action_string = "noop()"
 
         print(f"  Agent Action: {action_string}")
-
         messages.append({"role": "assistant", "content": action_string})
 
-        # Step calculation must happen BEFORE the [STEP] print
         new_state, reward, done, info = env.step(action_string)
         
-        # [STEP] tag inside the loop
+        # [STEP] tag
         print(f"[STEP] step={step} reward={reward}", flush=True)
         
         print(f"  Reward: {reward:+.2f} | Done: {done}")
@@ -94,12 +94,14 @@ Rules:
     print(f"  Task 2 (Refund & Reply Ticket):    {score_2:.2f} / 1.00")
     print(f"  Task 3 (Competitive Re-Pricing):   {score_3:.2f} / 1.00")
     print(f"  ---")
-    print(f"  Total:                             {score_1 + score_2 + score_3:.2f} / 3.00")
+    
+    total_raw = score_1 + score_2 + score_3
+    print(f"  Total Raw Score:                  {total_raw:.2f} / 3.00")
     print("=" * 60)
 
-    # These lines are now INDENTED so they stay inside the main() function
-    final_total_score = (score_1 + score_2 + score_3) / 3.0
-    print(f"[END] task=dropshipping score={final_total_score:.2f} steps={MAX_STEPS}", flush=True)
+    # REVISED [END] TAG: Includes all individual scores for the grader
+    final_total_score = total_raw / 3.0
+    print(f"[END] task=dropshipping score={final_total_score:.2f} steps={final_step_count} task1={score_1:.2f} task2={score_2:.2f} task3={score_3:.2f}", flush=True)
 
 if __name__ == "__main__":
     main()
