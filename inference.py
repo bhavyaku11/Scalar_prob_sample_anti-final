@@ -2,106 +2,79 @@ import os
 import json
 from openai import OpenAI
 from env import DropshippingEnv
-from tasks import grade_task_1, grade_task_2, grade_task_3
 
+# --- GRADER FUNCTIONS (Moved here so the robot can't miss them) ---
+def grade_task_1(final_state_json: str, env) -> float:
+    try:
+        state = json.loads(final_state_json)
+        target_product = env._out_of_stock_product
+        if state["inventory"].get(target_product, {}).get("stock") == 0:
+            return 0.99
+    except: pass
+    return 0.01
+
+def grade_task_2(final_state_json: str, env) -> float:
+    try:
+        state = json.loads(final_state_json)
+        target_ticket = env._ticket_id
+        refund_ok = any(r.get("ticket_id") == target_ticket and r.get("percentage", 0) >= 15 for r in state.get("refunds_issued", []))
+        reply_ok = any(r.get("ticket_id") == target_ticket for r in state.get("ticket_replies", []))
+        if refund_ok and reply_ok: return 0.99
+        if refund_ok or reply_ok: return 0.5
+    except: pass
+    return 0.01
+
+def grade_task_3(final_state_json: str, env) -> float:
+    try:
+        state = json.loads(final_state_json)
+        prod = state["inventory"].get(env._competitor_product, {})
+        new_price = prod.get("retail_price", 999)
+        if round(prod.get("cost_price", 0) / 0.80, 2) <= new_price <= round(env._competitor_price * 0.95, 2):
+            return 0.99
+    except: pass
+    return 0.01
+
+# --- MAIN INFERENCE LOGIC ---
 def main():
     api_base_url = os.environ.get("API_BASE_URL", "https://api.openai.com/v1")
     model_name = os.environ.get("MODEL_NAME", "gpt-4o-mini")
     hf_token = os.environ.get("HF_TOKEN", "sk-mock-key")
 
-    client = OpenAI(
-        base_url=api_base_url,
-        api_key=hf_token
-    )
-
+    client = OpenAI(base_url=api_base_url, api_key=hf_token)
     env = DropshippingEnv()
     MAX_STEPS = 5
 
-    system_prompt = """You are an autonomous Dropshipping Operations Manager. Your job is to manage a simulated e-commerce storefront by reading the current business state and taking exactly ONE action per turn.
-
-You must reply with exactly one of the following function calls. Do not include any conversational text:
+    system_prompt = """You are an autonomous Dropshipping Operations Manager. Manage the store by taking ONE action:
 - update_inventory(product_id: str, new_stock_level: int)
 - issue_refund(ticket_id: str, refund_percentage: int)
 - update_price(product_id: str, new_retail_price: float)
 - reply_ticket(ticket_id: str, message: str)
-- noop()
+- noop()"""
 
-Rules:
-- If a supplier says a product is out of stock, update the inventory to 0.
-- If adjusting prices against competitors, you must maintain at least a 20% profit margin ((Retail - Cost) / Retail >= 0.20) while staying at least 5% cheaper than the competitor price.
-- If a customer complains about a delayed package (over 7 days late), issue a 15% partial refund and reply to the ticket with an apology."""
-
-    messages = [
-        {"role": "system", "content": system_prompt}
-    ]
-
-    print("=" * 60)
-    print("  DROPSHIPPING OPERATIONS SIMULATION")
-    print("=" * 60)
-
-    # [START] tag
+    messages = [{"role": "system", "content": system_prompt}]
     print("[START] task=dropshipping", flush=True)
     
     final_step_count = 0
     for step in range(1, MAX_STEPS + 1):
         final_step_count = step
-        print(f"\n--- Step {step}/{MAX_STEPS} ---")
         state_str = env.state()
-
-        messages.append({
-            "role": "user",
-            "content": f"Current State:\n{state_str}\n\nWhat is your next action?"
-        })
-
+        messages.append({"role": "user", "content": f"State:\n{state_str}"})
         try:
-            response = client.chat.completions.create(
-                model=model_name,
-                messages=messages,
-                max_tokens=200,
-                temperature=0.0
-            )
+            response = client.chat.completions.create(model=model_name, messages=messages, temperature=0.0)
             action_string = response.choices[0].message.content.strip()
-        except Exception as e:
-            print(f"  API call failed: {str(e)}")
-            action_string = "noop()"
+        except: action_string = "noop()"
 
-        print(f"  Agent Action: {action_string}")
         messages.append({"role": "assistant", "content": action_string})
-
         new_state, reward, done, info = env.step(action_string)
-        
-        # [STEP] tag
         print(f"[STEP] step={step} reward={reward}", flush=True)
-        
-        print(f"  Reward: {reward:+.2f} | Done: {done}")
-        print(f"  Info: {info['message']} (Error: {info['error']})")
+        if done: break
 
-        if done:
-            print("\n  All tasks solved! Ending episode early.")
-            break
-
-    # --- Final Evaluation ---
-    print("\n" + "=" * 60)
-    print("  FINAL EVALUATION SCORES")
-    print("=" * 60)
-
+    # Final Evaluation
     final_state_json = env.state()
-    score_1 = grade_task_1(final_state_json, env)
-    score_2 = grade_task_2(final_state_json, env)
-    score_3 = grade_task_3(final_state_json, env)
-
-    print(f"  Task 1 (Supplier Stock-Out):      {score_1:.2f} / 1.00")
-    print(f"  Task 2 (Refund & Reply Ticket):    {score_2:.2f} / 1.00")
-    print(f"  Task 3 (Competitive Re-Pricing):   {score_3:.2f} / 1.00")
-    print(f"  ---")
+    s1, s2, s3 = grade_task_1(final_state_json, env), grade_task_2(final_state_json, env), grade_task_3(final_state_json, env)
+    total = (s1 + s2 + s3) / 3.0
     
-    total_raw = score_1 + score_2 + score_3
-    print(f"  Total Raw Score:                  {total_raw:.2f} / 3.00")
-    print("=" * 60)
-
-    # REVISED [END] TAG: Includes all individual scores for the grader
-    final_total_score = total_raw / 3.0
-    print(f"[END] task=dropshipping score={final_total_score:.2f} steps={final_step_count} task1={score_1:.2f} task2={score_2:.2f} task3={score_3:.2f}", flush=True)
+    print(f"[END] task=dropshipping score={total:.2f} steps={final_step_count} task1={s1:.2f} task2={s2:.2f} task3={s3:.2f}", flush=True)
 
 if __name__ == "__main__":
     main()
