@@ -3,7 +3,7 @@ import json
 from openai import OpenAI
 from env import DropshippingEnv
 
-# --- GRADER FUNCTIONS MOVED HERE ---
+# --- GRADER FUNCTIONS (Moved here to ensure the robot finds them) ---
 def grade_task_1(final_state_json: str, env) -> float:
     try:
         state = json.loads(final_state_json)
@@ -45,10 +45,8 @@ def main():
     env = DropshippingEnv()
     MAX_STEPS = 5
 
-    system_prompt = "You are a Dropshipping Manager. Respond only with function calls."
-    messages = [{"role": "system", "content": system_prompt}]
-
     print("[START] task=dropshipping", flush=True)
+    messages = [{"role": "system", "content": "You are a Dropshipping Manager. Reply only with function calls."}]
     
     for step in range(1, MAX_STEPS + 1):
         state_str = env.state()
@@ -59,13 +57,15 @@ def main():
         except: action = "noop()"
         
         messages.append({"role": "assistant", "content": action})
-        _, reward, done, _ = env.step(action)
+        new_state, reward, done, info = env.step(action)
         print(f"[STEP] step={step} reward={reward}", flush=True)
         if done: break
 
     # EVALUATION
     final_state = env.state()
-    s1, s2, s3 = grade_task_1(final_state, env), grade_task_2(final_state, env), grade_task_3(final_state, env)
+    s1 = grade_task_1(final_state, env)
+    s2 = grade_task_2(final_state, env)
+    s3 = grade_task_3(final_state, env)
     avg = (s1 + s2 + s3) / 3.0
     
     print(f"[END] task=dropshipping score={avg:.2f} steps={MAX_STEPS} task1={s1:.2f} task2={s2:.2f} task3={s3:.2f}", flush=True)
