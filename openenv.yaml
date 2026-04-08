@@ -1,13 +1,13 @@
 version: "1.0"
 tasks:
   - id: "task_1"
-    name: "Supplier Stock-Out"
+    name: "Task 1"
     grader: "inference:grade_task_1"
   - id: "task_2"
-    name: "Refund & Reply Ticket"
+    name: "Task 2"
     grader: "inference:grade_task_2"
   - id: "task_3"
-    name: "Competitive Re-Pricing"
+    name: "Task 3"
     grader: "inference:grade_task_3"
 
 docker:
