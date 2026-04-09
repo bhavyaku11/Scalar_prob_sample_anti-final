@@ -1,16 +1,16 @@
-version: 1.0
+version: "1.0"
 tasks:
-  - id: task_1
-    name: Task 1
-    grader: inference.grade_task_1
-  - id: task_2
-    name: Task 2
-    grader: inference.grade_task_2
-  - id: task_3
-    name: Task 3
-    grader: inference.grade_task_3
+  - id: "task_1"
+    name: "Supplier Stock-Out"
+    grader: "tasks:grade_task_1"
+  - id: "task_2"
+    name: "Refund & Reply Ticket"
+    grader: "tasks:grade_task_2"
+  - id: "task_3"
+    name: "Competitive Re-Pricing"
+    grader: "tasks:grade_task_3"
 
 docker:
-  dockerfile: Dockerfile
+  dockerfile: "Dockerfile"
 
-entrypoint: python server/app.py
+entrypoint: "python server/app.py"
