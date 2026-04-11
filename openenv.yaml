@@ -1,4 +1,5 @@
 version: "1.0"
+
 tasks:
   - id: "task_1"
     name: "Supplier Stock-Out"
