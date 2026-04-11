@@ -7,15 +7,18 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 __all__ = ['grade_task_1', 'grade_task_2', 'grade_task_3']
 
+def clamp(score):
+    return max(0.01, min(0.99, float(score)))
+
 def grade_task_1(final_state_json: str, env) -> float:
     try:
         state = json.loads(final_state_json)
         target_product = env._out_of_stock_product
         if state["inventory"].get(target_product, {}).get("stock") == 0:
-            return 0.99
+            return clamp(0.99)
     except Exception:
         pass
-    return 0.01
+    return clamp(0.01)
 
 def grade_task_2(final_state_json: str, env) -> float:
     try:
@@ -30,10 +33,10 @@ def grade_task_2(final_state_json: str, env) -> float:
             for r in state.get("ticket_replies", [])
         )
         if refund_ok and reply_ok:
-            return 0.99
+            return clamp(0.99)
     except Exception:
         pass
-    return 0.01
+    return clamp(0.01)
 
 def grade_task_3(final_state_json: str, env) -> float:
     try:
@@ -44,7 +47,7 @@ def grade_task_3(final_state_json: str, env) -> float:
         target_max = round(env._competitor_price * 0.95, 2)
         min_margin_price = round(cost / 0.80, 2)
         if min_margin_price <= new_price <= target_max:
-            return 0.99
+            return clamp(0.99)
     except Exception:
         pass
-    return 0.01
+    return clamp(0.01)
