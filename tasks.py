@@ -1,11 +1,9 @@
 import json
-import os
 import sys
+import os
 
-# Ensure the working directory is in path
+sys.path.insert(0, '/app')
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-from env import DropshippingEnv
 
 __all__ = ['grade_task_1', 'grade_task_2', 'grade_task_3']
 
@@ -15,7 +13,7 @@ def grade_task_1(final_state_json: str, env) -> float:
         target_product = env._out_of_stock_product
         if state["inventory"].get(target_product, {}).get("stock") == 0:
             return 0.99
-    except:
+    except Exception:
         pass
     return 0.01
 
@@ -33,7 +31,7 @@ def grade_task_2(final_state_json: str, env) -> float:
         )
         if refund_ok and reply_ok:
             return 0.99
-    except:
+    except Exception:
         pass
     return 0.01
 
@@ -47,6 +45,6 @@ def grade_task_3(final_state_json: str, env) -> float:
         min_margin_price = round(cost / 0.80, 2)
         if min_margin_price <= new_price <= target_max:
             return 0.99
-    except:
+    except Exception:
         pass
     return 0.01
